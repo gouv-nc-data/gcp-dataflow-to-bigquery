@@ -115,7 +115,7 @@ resource "google_cloud_scheduler_job" "job" {
               query : each.value.query,
               outputTable : "${var.project_id}:${var.dataset_name}.${each.value.bigquery_location}",
               bigQueryLoadingTemporaryDirectory : "gs://bucket-${var.dataset_name}/tmp",
-              isTruncate : var.isTruncate,
+              isTruncate : "${var.isTruncate}",
               stagingLocation : "gs://dataflow-staging-${var.region}-419271540634/staging",
               serviceAccount : google_service_account.service_account.email,
             },
