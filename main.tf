@@ -82,13 +82,14 @@ data "google_secret_manager_secret_version" "jdbc-url-secret" {
   secret  = var.jdbc-url-secret-name
 }
 
-resource "google_cloud_scheduler_job" "jo" {
+resource "google_cloud_scheduler_job" "job" {
   for_each         = var.queries
   project          = var.project_id
   name             = "job-${var.dataset_name}-${each.key}"
   schedule         = "${index(keys(var.queries), each.key) % 60} ${var.schedule}"
   time_zone        = "Pacific/Noumea"
   attempt_deadline = "320s"
+  depends_on = [ google_project_service.cloudschedulerapi ]
 
   retry_config {
     retry_count = 1
