@@ -37,7 +37,8 @@ resource "google_project_iam_custom_role" "dataflow-custom-role" {
   role_id     = "dataflow_custom_role"
   title       = "Dataflow Custom Role"
   description = "Role custom pour pouvoir créer des job dataflow depuis scheduler"
-  permissions = ["iam.serviceAccounts.actAs", "dataflow.jobs.create"]
+  permissions = ["iam.serviceAccounts.actAs", "dataflow.jobs.create", "storage.objects.create", "storage.objects.delete",
+                  "storage.objects.get", "storage.objects.getIamPolicy", "storage.objects.list"]
 }
 
 resource "google_project_iam_member" "dataflow_custom_worker_bindings" {
