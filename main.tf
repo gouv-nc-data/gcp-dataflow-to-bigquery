@@ -86,7 +86,7 @@ data "google_secret_manager_secret_version" "jdbc-url-secret" {
 resource "google_cloud_scheduler_job" "job" {
   for_each         = var.queries
   project          = var.project_id
-  name             = "job-${var.dataset_name}-${each.key}"
+  name             = "df-job-${var.dataset_name}-${each.key}"
   schedule         = "${index(keys(var.queries), each.key) % 60} ${var.schedule}"
   time_zone        = "Pacific/Noumea"
   attempt_deadline = "320s"
