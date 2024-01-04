@@ -43,7 +43,7 @@ variable "notification_channels" {
 }
 
 variable "isTruncate" {
-  type        = bool
-  default     = true
-  description = "Si vrai, vide la table cible, si faux, ajoute les données à l'existant"
+  type        = string
+  default     = "true"
+  description = "Si true, vide la table cible, si false, ajoute les données à l'existant"
 }
