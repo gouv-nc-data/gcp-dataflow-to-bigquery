@@ -98,7 +98,7 @@ resource "google_cloud_scheduler_job" "jo" {
     http_method = "POST"
     uri         = "https://dataflow.googleapis.com/v1b3/projects/${var.project_id}/locations/${var.region}/flexTemplates:launch"
     oauth_token {
-      service_account_email = "${google_service_account.service_account.email}"
+      service_account_email = google_service_account.service_account.email
     }
     body = base64encode(
       jsonencode(
