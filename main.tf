@@ -54,6 +54,13 @@ resource "google_project_iam_member" "service_account_bindings_storage_admin" {
   member   = "serviceAccount:${google_service_account.service_account.email}"
 }
 
+resource "google_project_iam_member" "service_account_bindings_storage_viewer" {
+  project  = var.project_id
+  role     = "roles/storage.objectViewer"
+  member   = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+
 ####
 # Bucket
 ####
@@ -113,7 +120,7 @@ resource "google_cloud_scheduler_job" "job" {
       jsonencode(
         {
           launchParameter : {
-            jobName : "df-${var.dataset_name}-${each.key}",
+            jobName : "df-${var.dataset_name}-${lower(replace(each.key, "_", "-"))}",
             containerSpecGcsPath : "gs://dataflow-templates-${var.region}/latest/flex/Jdbc_to_BigQuery_Flex",
             parameters : {
               driverJars : "gs://bucket-${var.dataset_name}/ojdbc8-21.7.0.0.jar,gs://bucket-${var.dataset_name}/postgresql-42.2.6.jar",
