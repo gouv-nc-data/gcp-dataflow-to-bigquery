@@ -60,6 +60,17 @@ resource "google_project_iam_member" "service_account_bindings_storage_viewer" {
   member   = "serviceAccount:${google_service_account.service_account.email}"
 }
 
+resource "google_project_iam_member" "service_account_bindings_dataflow_admin" {
+  project  = var.project_id
+  role     = "roles/dataflow.admin"
+  member   = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+resource "google_project_iam_member" "service_account_bindings_dataflow_worker" {
+  project  = var.project_id
+  role     = "roles/dataflow.worker"
+  member   = "serviceAccount:${google_service_account.service_account.email}"
+}
 
 ####
 # Bucket
