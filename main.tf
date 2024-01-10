@@ -48,6 +48,12 @@ resource "google_project_iam_member" "dataflow_custom_worker_bindings" {
   depends_on = [google_project_iam_custom_role.dataflow-custom-role]
 }
 
+resource "google_project_iam_member" "service_account_bindings_storage_admin" {
+  project  = var.project_id
+  role     = "roles/storage.objectAdmin"
+  member   = "serviceAccount:${google_service_account.service_account.email}"
+}
+
 ####
 # Bucket
 ####
