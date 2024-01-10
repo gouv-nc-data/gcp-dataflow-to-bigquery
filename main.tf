@@ -3,7 +3,7 @@ locals {
 }
 
 resource "google_service_account" "service_account" {
-  account_id   = "sa-${var.dataset_name}"
+  account_id   = "sa-df-${var.dataset_name}"
   display_name = "Service Account created by terraform for ${var.project_id}"
   project      = var.project_id
 }
@@ -78,7 +78,7 @@ resource "google_project_iam_member" "service_account_bindings_dataflow_worker" 
 
 resource "google_storage_bucket" "bucket" {
   project                     = var.project_id
-  name                        = "bucket-${var.dataset_name}"
+  name                        = "bucket-df-${var.dataset_name}"
   location                    = var.region
   storage_class               = "REGIONAL"
   uniform_bucket_level_access = true
