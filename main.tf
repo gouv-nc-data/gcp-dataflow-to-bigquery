@@ -146,7 +146,7 @@ resource "google_cloud_scheduler_job" "job" {
             },
             environment : {
               numWorkers : 1,
-              tempLocation : "gs://dataflow-staging-${var.region}-419271540634/tmp",
+              tempLocation : "gs://bucket-${var.dataset_name}/tmp",
               subnetwork : "regions/${var.region}/subnetworks/subnet-for-vpn",
               serviceAccountEmail: google_service_account.service_account.email,
             }
