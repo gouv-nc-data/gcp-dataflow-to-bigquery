@@ -156,3 +156,25 @@ resource "google_cloud_scheduler_job" "job" {
     )
   }
 }
+
+###############################
+# Supervision
+###############################
+resource "google_monitoring_alert_policy" "errors" {
+  display_name = "Errors in logs alert policy on ${var.dataset_name}"
+  project      = var.project_id
+  combiner     = "OR"
+  conditions {
+    display_name = "Error condition"
+    condition_matched_log {
+      filter = "severity=ERROR AND resource.type=dataflow_step"
+    }
+  }
+
+  notification_channels = var.notification_channels
+  alert_strategy {
+    notification_rate_limit {
+      period = "300s"
+    }
+  }
+}
