@@ -134,19 +134,19 @@ resource "google_cloud_scheduler_job" "job" {
             jobName : "df-${var.dataset_name}-${lower(replace(each.key, "_", "-"))}",
             containerSpecGcsPath : "gs://dataflow-templates-${var.region}/latest/flex/Jdbc_to_BigQuery_Flex",
             parameters : {
-              driverJars : "gs://bucket-${var.dataset_name}/ojdbc8-21.7.0.0.jar,gs://bucket-${var.dataset_name}/postgresql-42.2.6.jar",
+              driverJars : "gs://${google_storage_bucket.bucket.name}/ojdbc8-21.7.0.0.jar,gs://${google_storage_bucket.bucket.name}/postgresql-42.2.6.jar",
               driverClassName : "${var.type_database == "oracle" ? "oracle.jdbc.driver.OracleDriver" : "org.postgresql.Driver"}",
               connectionURL : data.google_secret_manager_secret_version.jdbc-url-secret.secret_data,
               query : each.value.query,
               outputTable : "${var.project_id}:${var.dataset_name}.${each.value.bigquery_location}",
-              bigQueryLoadingTemporaryDirectory : "gs://bucket-${var.dataset_name}/tmp",
+              bigQueryLoadingTemporaryDirectory : "gs://${google_storage_bucket.bucket.name}/tmp",
               isTruncate : var.isTruncate,
-              stagingLocation : "gs://bucket-${var.dataset_name}/staging",
+              stagingLocation : "gs://${google_storage_bucket.bucket.name}/staging",
               serviceAccount : google_service_account.service_account.email,
             },
             environment : {
               numWorkers : 1,
-              tempLocation : "gs://bucket-${var.dataset_name}/tmp",
+              tempLocation : "gs://${google_storage_bucket.bucket.name}/tmp",
               subnetwork : "regions/${var.region}/subnetworks/subnet-for-vpn",
               serviceAccountEmail: google_service_account.service_account.email,
             }
