@@ -167,7 +167,7 @@ resource "google_monitoring_alert_policy" "errors" {
   conditions {
     display_name = "Error condition"
     condition_matched_log {
-      filter = "severity=ERROR AND resource.type=dataflow_step"
+      filter = "severity=ERROR AND resource.type=dataflow_step AND logName=(\"projects/${var.project_id}/logs/dataflow.googleapis.com%2Fjob-message\" OR \"projects/${var.project_id}/logs/dataflow.googleapis.com%2Flauncher\")"
     }
   }
 
