@@ -85,6 +85,12 @@ resource "google_storage_bucket" "bucket" {
   force_destroy               = true
 }
 
+resource "null_resource" "ojdbc_driver" {
+  provisioner "local-exec" {
+    command = "curl https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.7.0.0/ojdbc8-21.7.0.0.jar | gsutil cp - ${google_storage_bucket.bucket.url}/ojdbc8-21.7.0.0.jar"
+  }
+}
+
 ####
 # Dataflow
 ####
