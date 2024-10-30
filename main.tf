@@ -1,9 +1,10 @@
 locals {
   secret-managment-project = "prj-dinum-p-secret-mgnt-aaf4"
+  safe-ds-name = substr(lower(replace(var.dataset_name, "_", "-")),0,24)
 }
 
 resource "google_service_account" "service_account" {
-  account_id   = "sa-df-${var.dataset_name}"
+  account_id   = "sa-df-${local.safe-ds-name}"
   display_name = "Service Account created by terraform for ${var.project_id}"
   project      = var.project_id
 }
@@ -78,7 +79,7 @@ resource "google_project_iam_member" "service_account_bindings_dataflow_worker" 
 
 resource "google_storage_bucket" "bucket" {
   project                     = var.project_id
-  name                        = "bucket-df-${var.dataset_name}"
+  name                        = "bucket-df-${local.safe-ds-name}"
   location                    = var.region
   storage_class               = "REGIONAL"
   uniform_bucket_level_access = true
@@ -117,7 +118,7 @@ data "google_secret_manager_secret_version" "jdbc-url-secret" {
 resource "google_cloud_scheduler_job" "job" {
   for_each         = var.queries
   project          = var.project_id
-  name             = "df-job-${var.dataset_name}-${each.key}"
+  name             = "df-job-${local.safe-ds-name}-${each.key}"
   schedule         = "${index(keys(var.queries), each.key) % 60} ${var.schedule}"
   time_zone        = "Pacific/Noumea"
   attempt_deadline = "320s"
@@ -137,7 +138,7 @@ resource "google_cloud_scheduler_job" "job" {
       jsonencode(
         {
           launchParameter : {
-            jobName : "df-${var.dataset_name}-${lower(replace(each.key, "_", "-"))}",
+            jobName : "df-${local.safe-ds-name}-${lower(replace(each.key, "_", "-"))}",
             containerSpecGcsPath : "gs://dataflow-templates-${var.region}/latest/flex/Jdbc_to_BigQuery_Flex",
             parameters : {
               driverJars : "gs://${google_storage_bucket.bucket.name}/ojdbc8-21.7.0.0.jar,gs://${google_storage_bucket.bucket.name}/postgresql-42.2.6.jar",
