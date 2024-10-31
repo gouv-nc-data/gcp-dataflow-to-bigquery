@@ -1,6 +1,40 @@
 # gcp-dataflow-to-bigquery
 Module terraform pour transférer des tables on premise vers BigQuery
 
+Les tables et leur schéma doivent exister pour que le job fonctionne.  
+Pour cela :
+- Selectionner les tables à migrer depuis Dbeaver et faire générer du SQL -> DDL
+- Mettre le contenu dans un fichier ddl.sql en ne gardant que le structure des requêtes inscrites dans le module
+- Utiliser SQL translator depuis GCP afin de convertir en google SQL
+- exécuter la requête qui va créer les tables.
+
+Exemple d'utilisation du module :
+```
+module "cagou-dataflow" {
+  source                = "git::https://github.com/gouv-nc-data/gcp-dataflow-to-bigquery.git//?ref=v1.1"
+  project_id            = module.dass-datawarehouse.project_id
+  group_name            = local.dass_group_name
+  region                = var.region
+  dataset_name          = "cagou"
+  schedule              = "2 * * 1-5" # les minutes sont gérées par le module
+  type_database         = "oracle"
+  notification_channels = module.dass-datawarehouse.notification_channels
+  jdbc-url-secret-name  = "cagou-jdbc-url-secret-prefix-jdbc"
+  queries = {
+    "T_MEMBRE" = {
+      bigquery_location = "T_MEMBRE",
+      query             = "SELECT ID_MEMBRE, ID_COMM_GEST, TITULAIRE, ID_TITRE, ID_COMMUNE, FONCTION, ID_CIVILITE, ID_CODE_POSTAL, PVS, PVN, PVI, VERSION_NUM, DATCRE, DATMAJ, USERCRE, USERMAJ FROM CAGOU.T_MEMBRE"
+    },
+    "T_REPRESENTANT" = {
+      bigquery_location = "T_REPRESENTANT",
+      query             = "SELECT ID_REPRESENTANT, ID_STATUT_REP, ID_CIVILITE_REP, NUMCAF_REP, ID_ADR_REP, DATECRE, DATEMAJ, USERCRE, USERMAJ, VERSIONNUM FROM CAGOU.T_REPRESENTANT"
+    }
+  }
+}
+```
+
+Attention mettre le schema dans le from de la requête.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
