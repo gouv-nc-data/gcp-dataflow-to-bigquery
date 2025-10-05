@@ -115,7 +115,7 @@ resource "google_cloud_scheduler_job" "job" {
             parameters : {
               driverJars : "gs://${google_storage_bucket.bucket.name}/ojdbc8-21.7.0.0.jar,gs://${google_storage_bucket.bucket.name}/postgresql-42.2.6.jar",
               driverClassName : "${var.type_database == "oracle" ? "oracle.jdbc.driver.OracleDriver" : "org.postgresql.Driver"}",
-              connectionURL : data.google_secret_manager_secret_version.jdbc-url-secret.secret_data,
+              connectionURL : substr(data.google_secret_manager_secret_version.jdbc-url-secret.secret_data, 0, 5) == "jdbc:" ? data.google_secret_manager_secret_version.jdbc-url-secret.secret_data : "jdbc:${data.google_secret_manager_secret_version.jdbc-url-secret.secret_data}",
               query : each.value.query,
               outputTable : "${var.project_id}:${var.dataset_name}.${each.value.bigquery_location}",
               bigQueryLoadingTemporaryDirectory : "gs://${google_storage_bucket.bucket.name}/tmp",
