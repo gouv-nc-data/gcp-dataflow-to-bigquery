@@ -47,3 +47,16 @@ variable "isTruncate" {
   default     = "true"
   description = "Si true, vide la table cible, si false, ajoute les données à l'existant"
 }
+
+
+variable "secret_management_project_id" {
+  type        = string
+  description = "ID du projet contenant les secrets."
+  default     = "prj-dinum-p-secret-mgnt-aaf4"
+}
+
+variable "subnetwork_name" {
+  type        = string
+  description = "Nom du sous-réseau à utiliser pour les workers Dataflow."
+  default     = "subnet-for-vpn"
+}

@@ -1,5 +1,5 @@
 locals {
-  secret-managment-project = "prj-dinum-p-secret-mgnt-aaf4"
+  secret-managment-project = var.secret_management_project_id
   safe-ds-name = substr(lower(replace(var.dataset_name, "_", "-")),0,24)
 }
 
@@ -9,21 +9,17 @@ resource "google_service_account" "service_account" {
   project      = var.project_id
 }
 
-resource "google_project_iam_member" "bigquery_editor_bindings" {
+resource "google_project_iam_member" "project_roles" {
+  for_each = toset([
+    "roles/bigquery.dataEditor",
+    "roles/bigquery.user",
+    "roles/dataflow.worker",
+    "roles/storage.objectAdmin",
+    "roles/storage.objectViewer",
+    "roles/dataflow.admin"
+  ])
   project = var.project_id
-  role    = "roles/bigquery.dataEditor"
-  member  = "serviceAccount:${google_service_account.service_account.email}"
-}
-
-resource "google_project_iam_member" "bigquery_user_bindings" {
-  project = var.project_id
-  role    = "roles/bigquery.user"
-  member  = "serviceAccount:${google_service_account.service_account.email}"
-}
-
-resource "google_project_iam_member" "dataflow_worker_bindings" {
-  project = var.project_id
-  role    = "roles/dataflow.worker"
+  role    = each.key
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
@@ -39,7 +35,7 @@ resource "google_project_iam_custom_role" "dataflow-custom-role" {
   title       = "Dataflow Custom Role"
   description = "Role custom pour pouvoir créer des job dataflow depuis scheduler"
   permissions = ["iam.serviceAccounts.actAs", "dataflow.jobs.create", "storage.objects.create", "storage.objects.delete",
-                  "storage.objects.get", "storage.objects.getIamPolicy", "storage.objects.list"]
+    "storage.objects.get", "storage.objects.getIamPolicy", "storage.objects.list"]
 }
 
 resource "google_project_iam_member" "dataflow_custom_worker_bindings" {
@@ -47,30 +43,6 @@ resource "google_project_iam_member" "dataflow_custom_worker_bindings" {
   role       = "projects/${var.project_id}/roles/${google_project_iam_custom_role.dataflow-custom-role.role_id}"
   member     = "serviceAccount:${google_service_account.service_account.email}"
   depends_on = [google_project_iam_custom_role.dataflow-custom-role]
-}
-
-resource "google_project_iam_member" "service_account_bindings_storage_admin" {
-  project  = var.project_id
-  role     = "roles/storage.objectAdmin"
-  member   = "serviceAccount:${google_service_account.service_account.email}"
-}
-
-resource "google_project_iam_member" "service_account_bindings_storage_viewer" {
-  project  = var.project_id
-  role     = "roles/storage.objectViewer"
-  member   = "serviceAccount:${google_service_account.service_account.email}"
-}
-
-resource "google_project_iam_member" "service_account_bindings_dataflow_admin" {
-  project  = var.project_id
-  role     = "roles/dataflow.admin"
-  member   = "serviceAccount:${google_service_account.service_account.email}"
-}
-
-resource "google_project_iam_member" "service_account_bindings_dataflow_worker" {
-  project  = var.project_id
-  role     = "roles/dataflow.worker"
-  member   = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 ####
@@ -118,7 +90,7 @@ data "google_secret_manager_secret_version" "jdbc-url-secret" {
 resource "google_cloud_scheduler_job" "job" {
   for_each         = var.queries
   project          = var.project_id
-  name             = "df-job-${local.safe-ds-name}-${each.key}"
+  name             = "df-job-${local.safe-ds-name}-${lower(replace(each.key, "_", "-"))}"
   schedule         = "${index(keys(var.queries), each.key) % 60} ${var.schedule}"
   time_zone        = "Pacific/Noumea"
   attempt_deadline = "320s"
@@ -155,7 +127,7 @@ resource "google_cloud_scheduler_job" "job" {
             environment : {
               numWorkers : 1,
               tempLocation : "gs://${google_storage_bucket.bucket.name}/tmp",
-              subnetwork : "regions/${var.region}/subnetworks/subnet-for-vpn",
+              subnetwork : "regions/${var.region}/subnetworks/${var.subnetwork_name}",
               serviceAccountEmail: google_service_account.service_account.email,
             }
           }
